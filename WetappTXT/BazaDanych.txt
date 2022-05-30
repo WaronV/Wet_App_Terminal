@@ -1,0 +1,18 @@
+Imie opiekuna:wiktor
+Nazwisko opiekuna:pawlak
+Pesel opiekuna:12345678901
+Numer psa:910652
+Nazwa psa:lora
+Rasa psa:pudel
+Wiek psa:2
+Data dodana:2022-02-20
+/
+Imie opiekuna:daniel
+Nazwisko opiekuna:zawadka
+Pesel opiekuna:12345678903
+Numer psa:771816
+Nazwa psa:kamil
+Rasa psa:szpic
+Wiek psa:9
+Data dodana:2022-02-20
+/

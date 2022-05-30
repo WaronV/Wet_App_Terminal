@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32106.194
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "WetappTXT", "WetappTXT\WetappTXT.pyproj", "{B64DF03E-8EAD-4366-BEC8-E4F6DD98C065}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B64DF03E-8EAD-4366-BEC8-E4F6DD98C065}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B64DF03E-8EAD-4366-BEC8-E4F6DD98C065}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1B4A1111-5E45-4649-BE58-8175E998E77B}
+	EndGlobalSection
+EndGlobal
