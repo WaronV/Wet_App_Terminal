@@ -2,183 +2,212 @@ import random
 import datetime
 import re
 import sys
+import mysql.connector
 
 class Dog():
-    def __init__ (self,opiekunImie=" ",opiekunNazwisko=" ",opiekunPesel=[0], numer=0, nazwa=" ", rasa=" ", wiek=0):
-        self.opiekunImie=opiekunImie
-        self.opiekunNazwisko=opiekunNazwisko
-        self.opiekunPesel=opiekunPesel
-        self.numer=numer
-        self.nazwa=nazwa
-        self.rasa=rasa
-        self.wiek=wiek
+    def __init__ (self,id = " ",name_owner = " ",surname_owner = " ",id_owner = [0], dog_number = 0, name_dog = " ", race_dog = " ", age_dog = 0, date_added = "", visit_history = "", note = "", foto = "" ):
+        self.name_owner = name_owner
+        self.surname_owner = surname_owner
+        self.id_owner = id_owner
+        self.dog_number = dog_number
+        self.name_dog = name_dog
+        self.race_dog = race_dog
+        self.age_dog = age_dog
+        self.date_added = date_added
+        self.visit_history = visit_history
+        self.note = note
+        self.foto = foto
 
-    def dodaj(self):
+    def list(self):
+        return [self.name_owner, self.surname_owner, self.id_owner, self.dog_number, self.name_dog, self.race_dog, self.age_dog, self.date_added]
 
-        self.opiekunImie=input("Podaj imie opiekuna: ").lower()
-        self.opiekunNazwisko=input("Podaj nazwisko opiekuna: ").lower()
-        self.opiekunPesel=sprawdzPesel()
-        self.numer=losujNumer()
-        with open("DogsNumbers.txt", "a") as plik:
-            plik.writelines("\n"+self.numer)
-        self.nazwa=input("Podaj nazwe psa: ").lower()
-        self.rasa=input("Podaj rase psa: ").lower()
-        self.wiek=input("Podaj wiek psa: ")
-        self.dataDodania=datetime.date.today()
+    def add_dog(self):
+
+        self.name_owner = input("Enter the name of the owner: ").lower()
+        self.surname_owner = input("Enter the surname of the owner: ").lower()
+        self.id_owner = check_id()
+        self.dog_number = draw_number()
+        self.name_dog = input("Enter the dog's name: ").lower()
+        self.race_dog = input("Enter the dog's race: ").lower()
+        self.age_dog = input("Enter the dog's age: ")
+        self.date_added=datetime.date.today()
 
     def __str__ (self):
-        return "Imie opiekuna:"+self.opiekunImie+"\nNazwisko opiekuna:"+self.opiekunNazwisko+"\nPesel opiekuna:"+self.opiekunPesel+"\nNumer psa:"+self.numer+"\nNazwa psa:"+self.nazwa+"\nRasa psa:"+self.rasa+"\nWiek psa:"+self.wiek+"\nData dodana:"+str(self.dataDodania)+"\n/\n"
-    def wczytajPsy(self):
-        tab=[]
-        tabc=[]
-        y=""
-        with open("BazaDanych.txt", "r") as plik:
-            while True:
-                x=plik.read(1)
-                if x==":":
-                    while True:
-                        x=plik.read(1)
-                        if x=="\n":
-                            break
-                        y=y+x
-                    tab.append(y)
-                    y=""
-                if x=="":
-                    break
-        tabc.append(self.__init__(tab[0],tab[1],tab[2],tab[3],tab[4],tab[5],tab[6]))
-        print(tab)
-        print(tabc)
-        del tab, y
-        return tabc
+        return "Name owner:" + self.name_owner + "\nSurname owner:" + self.surname_owner + "\nID number owner:" + self.id_owner + "\nNumber dog:" + self.dog_number + "\nName dog:" + self.name_dog + "\nRace dog:" + self.race_dog + "\nAge dog:" + self.age_dog + "\nDate added:" + str(self.date_added) + "\n/\n"
 
-def info(z,plik=0):
-    with open("BazaDanych.txt", "r") as plik:
-        for numberline, k in enumerate(plik):
-            if numberline>(z[0]-4) and numberline<(z[0]+4):
-                k=k.replace("\n","")
-                print(k)
+    def load_dogs(self):
+        cnx = mysql.connector.connect(host='localhost', user='root', password='1234567', database='wet_app1')
+        return cnx
 
-def sprawdzPesel():
-    tab=[]
-    with open("BazaDanych.txt", "r") as plik:
-        tab=[k.replace("Pesel opiekuna: ", "").replace("\n","") for k in plik if re.match("Pesel", k)]
+def info(z):
+    mycursor = cnx.cursor(buffered=True)
+    mycursor.execute("SELECT * FROM wet_app1 WHERE dog_number = %s", (z,))
+    result = mycursor.fetchall()
+    print(result)
 
+def check_id():
     while True:
-        m=0
-        n=input("Podaj pesel opiekuna: ")
-        if len(n) != 11:
-            print("niewłasciwy pesel ")
+        n = input("Enter the ID number of the owner: ")
+        if (len(n) != 11):
+           print("Wrong ID number")
+           continue
+        mycursor = cnx.cursor(buffered=True)
+        mycursor.execute("SELECT id_owner, COUNT(*) FROM wet_app1 WHERE id_owner = %s GROUP BY id_owner", (n,))
+        row_count = mycursor.rowcount
+        if (not n.isnumeric()):
+            print("Wrong ID number")
             continue
-        for x in list(n):
-            try:
-                x=int(x)
-                m=m+1
-            except ValueError: 
-                break
-
-        if m==11 and n not in tab:
-            del m, tab
+        else:
             return n
-        else: 
-            print("niewłasciwy pesel ")
 
-def losujNumer():  
+def draw_number():  
     while True:
-        plik=open('DogsNumbers.txt','r')
-        tab2=[]
+        tab2 = []
         for i in range(0,6):
             tab2.append(random.randint(0,9))
-        tab2="".join([str(elm) for elm in tab2])
-        if tab2 in plik.read():
+        tab2 = "".join([str(elm) for elm in tab2])
+        mycursor = cnx.cursor(buffered=True)
+        mycursor.execute("SELECT dog_number, COUNT(*) FROM wet_app1 WHERE dog_number = %s GROUP BY dog_number", (tab2,))
+        row_count = mycursor.rowcount
+        if (row_count != 0):
             continue
-        plik.close()
-        break
-    return tab2
+        return tab2
 
-def dodajPsa():
-    #zmienna=Dog()
-    zmienna.dodaj()
-    with open("BazaDanych.txt", "a") as plik:
-        plik.writelines(zmienna.__str__())
+def add_dog():
+    zmienna.add_dog()
+    x = zmienna.list()
+    sql = "INSERT INTO wet_app1 (name_owner, surname_owner, id_owner,  dog_number, name_dog, race_dog, age_dog, date_added) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+    mycursor = cnx.cursor(buffered=True)
+    mycursor.execute(sql, x)
+    mycursor.execute("SELECT * FROM wet_app1")
+    print("Successful addition of dog!")
 
-def szukajPsa(func):
+def look_for_dog(func):
     while True:
-        z=input("Podaj numer psa")
-        with open("BazaDanych.txt", "r") as plik:
-            numberline=[numberline for numberline, k in enumerate(plik) if re.search(z,k)]
-        func(numberline)
-    del numberline, z
+        z = input("Enter the dog's number: ")
+        mycursor = cnx.cursor(buffered=True)
+        mycursor.execute("SELECT dog_number, COUNT(*) FROM wet_app1 WHERE dog_number = %s GROUP BY dog_number", (z,))
+        row_count = mycursor.rowcount
+        if (row_count != 0):
+            func(z)
+            break
+        elif z == 'back':
+            break
+        else: print("Dog don't exist")
+    del z
 
-def przegladajPsy():
-    with open("BazaDanych.txt", "r") as plik:
-        for x in plik:
-            x=plik.read()
-            print(x)
+def browse_dogs():
+    mycursor = cnx.cursor(buffered=True)
+    mycursor.execute("SELECT * FROM wet_app1")
+    result = mycursor.fetchall()
+    for row in result:
+        print(row)
 
-def usunPsa(z):
-    line=[]
-    with open("BazaDanych.txt", "r") as plik:
-        line=plik.readlines()
-    with open("BazaDanych.txt", "w") as plik:
-        for numberline, lines in enumerate(line):
-            print(numberline)
-            if numberline<(z[0]-4) or numberline>(z[0]+4):
-                plik.write(lines)
-    del line
+def remove_dog(z):
+    mycursor = cnx.cursor(buffered=True)
+    mycursor.execute("DELETE FROM wet_app1 WHERE dog_number = %s ", (z,))
+    print("Dog was deleted")
 
-def editPsa(z):
-    print("\nCo chcesz nadpisac? \n1) Imie opiekuna \n2) Nazwisko opiekuna \n3) Pesel opiekuna \n4) Numer psa \n5) Nazwa psa\n6) Rasa psa\n7) Wiek psa\n" )
-    x=input()
-    if x=="1":
-        print("x")
-    elif x=="2":
-        print("x")
-    elif x=="3":
-        print("x")
-    elif x=="4":
-        print("x")
-    elif x=="5":
-        print("x")
-    elif x=="6":
-        print("x")
-    elif x=="7":
-        print("x")
+def edit_dog(z):
+    print("\nWhat do you want to overwrite? \n1) Name owner \n2) Surname owner \n3) ID number owner \n4) Dog name \n5) Dog race \n6) Dog age\n7) visit history \n8) note \n9) name foto \n" )
+    x = input()
+    if x == "1":
+        upgrade(z, "name_owner")
+    elif x == "2":
+        upgrade(z, "surname_owner")
+    elif x == "3":
+        upgrade(z, "id_owner")
+    elif x == "4":
+        upgrade(z, "name_dog")
+    elif x == "5":
+        upgrade(z, "race_dog")
+    elif x == "6":
+        upgrade(z, "age_owner")
+    elif x == "7":
+        upgrade_text(z, "visit_history")
+    elif x == "8":
+        upgrade_text(z, "note")
+    elif x == "9":
+        upgrade(z, "age_owner")
+    elif z == 'back':
+        return
     else:
-        print("nieprawidlowa komenda")
+        print("invalid command")
 
-def funcexit():
+def upgrade(z, col):
+    if col == "id_owner":
+        var = check_id()
+    elif z == 'back':
+        return
+    else:
+        var = input("\n new value :")
+    func = f"UPDATE wet_app1 SET {col} = %s WHERE dog_number = %s "
+    mycursor = cnx.cursor(buffered=True)
+    mycursor.execute(func, ( var, z,))
+
+def upgrade_text(z, col):
+    print("\n What you want to do? \n a) rewrite \n b) add text \n")
+    func = f"UPDATE wet_app1 SET {col} = %s WHERE dog_number = %s"
+    func1 = f"SELECT {col} FROM wet_app1 WHERE dog_number = %s"
     while True:
-        x=input("a) zapisz \nb) niezapisuj \nc) anuluj \n").lower()
-        if x=="a":
-            print("x")
-        elif x=="b":
+        x = input()
+        if x == "a":
+            var = input("\n new value :")
+            mycursor = cnx.cursor(buffered=True)
+            mycursor.execute(func, (var, z,))
+            break
+
+        elif x == "b":
+            var = input("\n new value :")
+            mycursor = cnx.cursor(buffered=True)
+            mycursor.execute(func1, (z,))
+            result = mycursor.fetchall()
+            print(result)
+            origin = result[0]
+            var = str(origin[0]) + ";" + var
+            mycursor.execute(func, (var, z,))
+            break
+
+        elif z == 'back':
+            break
+
+        else:
+            print("invalid command")
+
+def func_exit():
+    while True:
+        x = input("a) save \nb) don't save \nc) cancel \n").lower()
+        if x == "a":
+            cnx.commit()
             sys.exit(0)
-        elif x=="c":
+        elif x == "b":
+            sys.exit(0)
+        elif x == "c":
             break
         else:
-            print("nieprawidlowa komenda")
+            print("invalid command")
 
 
-#--------------------------------------------menu glowne--------------------------------------------
-tab=[]
+#--------------------------------------------main menu--------------------------------------------
+tab = []
 
-zmienna=Dog()
-tab=zmienna.wczytajPsy()
-while True: #menu glowne
-    x=input("\nCo chcesz zrobic? \na) Dodaj psa \nb) Przegladaj psa \nc) Szukaj psa \nd) edytuj psa \ne) usun psa\nx) zamknij program\n").lower()
-    if x=="a":
-        dodajPsa()
-    elif x=="b":
-        przegladajPsy()
-    elif x=="c":
-        szukajPsa(info)
-    elif x=="d":
-        szukajPsa(editPsa)
-    elif x=="e":
-        szukajPsa(usunPsa)
-    elif x=="x":
-        funcexit()
+zmienna = Dog()
+cnx = zmienna.load_dogs()
+while True: #main menu
+    x=input("\nWhat you want to do? \na) Add dog \nb) Browse dog \nc) Look for fog \nd) Edit dog \ne) Remove dog\nx) Close app\n").lower()
+    if x == "a":
+        add_dog()
+    elif x == "b":
+        browse_dogs()
+    elif x == "c":
+        look_for_dog(info)
+    elif x == "d":
+        look_for_dog(edit_dog)
+    elif x == "e":
+        look_for_dog(remove_dog)
+    elif x == "x":
+        func_exit()
     else:
-        print("nieprawidlowa komenda")
+        print("invalid command")
 
 #-----------------------------------------------------------------------------------------------------
